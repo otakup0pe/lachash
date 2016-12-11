@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+set -e
+PLATFORMS="linux/amd64 linux/arm windows/amd64 darwin/amd64"
+
+for d in go zip avakas ; do
+    if ! which $d &> /dev/null ; then
+        echo "$d missing"
+        exit 1
+    fi
+done
+
+mkdir -p build
+VSN=$(avakas show .)
+
+for p in $PLATFORMS ; do
+    OS=$(cut -f 1 -d '/' <<< "$p")
+    ARCH=$(cut -f 2 -d '/' <<< "$p")
+    DEST="lachash-${OS}-${ARCH}"
+    B_DEST="build/$DEST"
+    Z_DEST="build/${DEST}.zip"
+    if [ "$OS" == "windows" ] ; then
+        B_DEST="${B_DEST}.exe"
+    fi
+    go build -o "$B_DEST" -ldflags "-X main.lachash_version = ${VSN}"
+    zip -q "$Z_DEST" "$B_DEST"
+done
