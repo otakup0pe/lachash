@@ -66,6 +66,8 @@ for p in $PLATFORMS ; do
     C_NAME="lachash${DEST_SUFFIX}"
     [ -e "$C_NAME" ] && rm "$C_NAME"
     cp "${DEST}${DEST_SUFFIX}" "$C_NAME"
-    zip -q "${ROOTDIR}/build/${Z_DEST}" "$C_NAME"
+    ZIP="${ROOTDIR}/build/${Z_DEST}"
+    echo "wrote to $ZIP"
+    zip -q "$ZIP" "$C_NAME"
     rm "$C_NAME"
 done
