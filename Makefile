@@ -8,7 +8,7 @@ test:
 		go test || exit 1 ; \
 	done
 
-build:
+build: deps
 	./scripts/build || exit 1
 
 deps:
