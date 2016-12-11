@@ -1,27 +1,56 @@
 #!/usr/bin/env bash
-
 set -e
+
+# These are the platforms we will build
 PLATFORMS="linux/amd64 linux/arm windows/amd64 darwin/amd64"
 
-for d in go zip avakas ; do
+# Check our dependencies and setup our environment
+for d in go zip git; do
     if ! which $d &> /dev/null ; then
         echo "$d missing"
         exit 1
     fi
 done
-
 mkdir -p build
-VSN=$(avakas show .)
+SCRIPTDIR=$( cd ${0%/*} && pwd)
+ROOTDIR="${SCRIPTDIR%/*}"
+
+# Figure out our current version Include prebuild deets if
+# this is not a tagged commit
+if git describe --tags --exact-match HEAD &> /dev/null ; then
+    AVAKAS_ARGS=""
+else
+    AVAKAS_ARGS="--pre-build"
+fi
+if which avakas &> /dev/null ; then
+    VSN=$(avakas show "$ROOTDIR" "$AVAKAS_ARGS")
+else
+    if which docker &> /dev/null ; then
+        VSN=$(docker run -v "${ROOTDIR}:/app" otakup0pe/avakas show /app "$AVAKAS_ARGS")
+    else
+        echo "Unable to determine version"
+        exit 1
+    fi
+fi
 
 for p in $PLATFORMS ; do
     OS=$(cut -f 1 -d '/' <<< "$p")
     ARCH=$(cut -f 2 -d '/' <<< "$p")
+    echo "Building for ${OS} ${ARCH}"
     DEST="lachash-${OS}-${ARCH}"
-    B_DEST="build/$DEST"
-    Z_DEST="build/${DEST}.zip"
+    B_DEST="$DEST"
+    Z_DEST="${DEST}.zip"
     if [ "$OS" == "windows" ] ; then
         B_DEST="${B_DEST}.exe"
     fi
-    go build -o "$B_DEST" -ldflags "-X main.lachash_version = ${VSN}"
+    cmd=(go build -o "build/${B_DEST}" -ldflags "-X main.lachash_version=${VSN}")
+    cd "$ROOTDIR"
+    if [ "$OS" == "linux" ] && [ "$ARCH" == "arm" ] ; then
+        GOOS="$OS" GOARCH="$ARCH" GOARM=6 "${cmd[@]}"
+    else
+        GOOS="$OS" GOARCH="$ARCH" "${cmd[@]}"
+    fi
+    cd "${ROOTDIR}/build"
+    [ -e "$Z_DEST" ] && rm "$Z_DEST"
     zip -q "$Z_DEST" "$B_DEST"
 done

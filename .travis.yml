@@ -1,0 +1,18 @@
+language: go
+sudo: false
+services:
+- docker
+script: make test build
+deploy:
+  provider: releases
+  api_key: "$GITHUB_DEPLOY_KEY"
+  on:
+    tags: true
+  files:
+  - build/lachash-linux-arm.zip
+  - build/lachash-linux-amd64.zip
+  - build/lachash-darwin-amd64.zip
+  - buiild/lachash-windows-amd64.zip
+env:
+  global:
+    secure: pLOph55K/fewYrocMHFTc0oWcyNHogdIEMUPRggX4anPAOYNaghG8kBuhJ/BD2dtt78ASaEX1IjyXsBMQYFdnB5xAGLPUjbFwsa235RPBf5LdG/oY2YFHE7hd6xr1jSNZLMVo0Igciry6d2KgPFPXyPgq6xo4RW67oLH3sMd258B40zgheaOz+6qJ3ryWi4bohp3eYhBT9KwPD5zOWz1pc5AjUU2WcHbjpT2+kyzVsdGpRv+QxV/4zNAcmV+09q3m90/eIJDcvcswcpSbLsZdMCRcoZOqHU36g5IFhqaiwStpgHPlbUASJORfM9l7DFxgRkW7xqBrETTkTL687UbQEI2YiwizBaRxOpUqExzpP7wfg621Te+H5H2soyEfSt+qvS2xPinvLNx2RNNRz3d/zhRe/kfSLDerSsqvgI+W9Y2LGr1ZKr5LloL6QUwzWvN2Vr27xroBDSnWoKN/ahDVCUu7U0KF2rCC6GqugwgX35uWuIwZt113BkWc6mCUOwHITDhYOmjJuzL+Vqx8kJdseZQRqqfdi+pEea1qmWBWKv8fxnGEwhTTnF57zD4uTVdWRH2aa7ptATNKH8YH44U2HcQ/mjA7+8wPSNpWA1U9DepISoVKuJ7PbJ+Lo7gHu+vgZcvV8G6x/tS5+n0QbxlUq+nIMze/mBczG3w+wpKkqQ=
