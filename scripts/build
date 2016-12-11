@@ -12,8 +12,12 @@ for d in go zip git; do
     fi
 done
 mkdir -p build
-SCRIPTDIR=$( cd ${0%/*} && pwd)
-ROOTDIR="${SCRIPTDIR%/*}"
+if [ -z "$TRAVIS_BUILD_DIR" ] ; then
+    SCRIPTDIR=$( cd ${0%/*} && pwd)
+    ROOTDIR="${SCRIPTDIR%/*}"
+else
+    ROOTDIR="$TRAVIS_BUILD_DIR"
+fi
 
 # Figure out our current version Include prebuild deets if
 # this is not a tagged commit
@@ -22,9 +26,12 @@ if git describe --tags --exact-match HEAD &> /dev/null ; then
 else
     AVAKAS_ARGS="--pre-build"
 fi
+# If avakas is installed locally, use that
 if which avakas &> /dev/null ; then
     VSN=$(avakas show "$ROOTDIR" "$AVAKAS_ARGS")
 else
+    # If avakas is not installed, we need docker
+    # This covers the travis-ci use case
     if which docker &> /dev/null ; then
         VSN=$(docker run -v "${ROOTDIR}:/app" otakup0pe/avakas show /app "$AVAKAS_ARGS")
     else
@@ -33,18 +40,22 @@ else
     fi
 fi
 
+# for each platform, generate a named zip file
+# containing a single consistently named executable
 for p in $PLATFORMS ; do
     OS=$(cut -f 1 -d '/' <<< "$p")
     ARCH=$(cut -f 2 -d '/' <<< "$p")
     echo "Building for ${OS} ${ARCH}"
     DEST="lachash-${OS}-${ARCH}"
-    B_DEST="$DEST"
+    DEST_SUFFIX=""
     Z_DEST="${DEST}.zip"
+    # Windows needs this extension
     if [ "$OS" == "windows" ] ; then
-        B_DEST="${B_DEST}.exe"
+        DEST_SUFFIX=".exe"
     fi
-    cmd=(go build -o "build/${B_DEST}" -ldflags "-X main.lachash_version=${VSN}")
+    cmd=(go build -o "build/${DEST}${DEST_SUFFIX}" -ldflags "-X main.lachash_version=${VSN}")
     cd "$ROOTDIR"
+    # Compile the ARM we want
     if [ "$OS" == "linux" ] && [ "$ARCH" == "arm" ] ; then
         GOOS="$OS" GOARCH="$ARCH" GOARM=6 "${cmd[@]}"
     else
@@ -52,8 +63,9 @@ for p in $PLATFORMS ; do
     fi
     cd "${ROOTDIR}/build"
     [ -e "$Z_DEST" ] && rm "$Z_DEST"
-    [ -e "lachash" ] && rm "lachash"
-    cp "$B_DEST" "lachash"
-    zip -q "$Z_DEST" "lachash"
-    rm "lachash"
+    C_NAME="lachash${DEST_SUFFIX}"
+    [ -e "$C_NAME" ] && rm "$C_NAME"
+    cp "${DEST}${DEST_SUFFIX}" "$C_NAME"
+    zip -q "$Z_DEST" "$C_NAME"
+    rm "$C_NAME"
 done
