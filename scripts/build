@@ -52,5 +52,8 @@ for p in $PLATFORMS ; do
     fi
     cd "${ROOTDIR}/build"
     [ -e "$Z_DEST" ] && rm "$Z_DEST"
-    zip -q "$Z_DEST" "$B_DEST"
+    [ -e "lachash" ] && rm "lachash"
+    cp "$B_DEST" "lachash"
+    zip -q "$Z_DEST" "lachash"
+    rm "lachash"
 done

@@ -2,7 +2,7 @@ default: test build
 
 pwd = $(shell pwd)
 
-test:
+test: deps
 	for d in helpers vault cli ; do \
 		cd $(pwd)/$$d GOPATH=$(GOPATH) ; \
 		go test || exit 1 ; \
@@ -14,4 +14,4 @@ build: deps
 deps:
 	GOBIN=$(GOPATH)/bin GOPATH=$(GOPATH) go get
 
-.PHONY: build
+.PHONY: build deps

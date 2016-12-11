@@ -11,7 +11,7 @@ import (
 
 type Stash struct {}
 var ttl, uses int
-var return_hash_token bool
+var return_short_code bool
 var source_file, policy string
 
 func (c *Stash) Synopsis() string {
@@ -59,7 +59,7 @@ func (c *Stash) Run(args []string) int {
 	stash_token := vault.GetStashToken(client, ttl, uses, policy)
 	client.SetToken(stash_token)
 	vault.WriteStash(encoded, client)
-	if return_hash_token {
+	if return_short_code {
 		helpers.Log(fmt.Sprintf("Stash Token %s", stash_token))
 		helpers.Output(helpers.EncodeUUID(stash_token))
 	} else {
@@ -72,7 +72,7 @@ func stash_flags() (fs *flag.FlagSet) {
 	fs = helpers.Flags("stash")
 	fs.IntVar(&ttl, "ttl", 1800, "Time To Live for the stashed data, in seconds")
 	fs.IntVar(&uses, "uses", 1, "How many times the stashed data may be retrieved")
-	fs.BoolVar(&return_hash_token, "hash-token", false, "Produce a hashed token")
+	fs.BoolVar(&return_short_code, "short-code", false, "Output a short code instead of a Vault token")
 	fs.StringVar(&source_file, "input", "", "File to stash")
 	fs.StringVar(&policy, "policy", "default", "The Vault policy to use")
 	return

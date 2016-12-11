@@ -10,7 +10,7 @@ import (
 	"github.com/otakup0pe/lachash/vault"
 )
 
-var token, hash_token, dest_file string
+var token, short_code, dest_file string
 
 type Pop struct {}
 func (c *Pop) Synopsis() string {
@@ -40,18 +40,18 @@ func (c *Pop) Run(args []string) int {
 	if err := f.Parse(args); err != nil {
 		helpers.Problems(err.Error())
 	}
-	if token != "" && hash_token != "" {
+	if token != "" && short_code != "" {
 		helpers.Problems("Can not specify both token and hash-token")
 	}
-	if token == "" && hash_token == "" {
+	if token == "" && short_code == "" {
 		helpers.Log("Using environmental token")
 		client = vault.GetClient(vault.GetToken())
 	} else if token != "" {
 		helpers.Log("Using specified token")
 		client = vault.GetClient(token)
-	} else if hash_token != "" {
-		helpers.Log("Using specified hashed token")
-		client = vault.GetClient(helpers.DecodeUUID(hash_token))
+	} else if short_code != "" {
+		helpers.Log("Using specified short code")
+		client = vault.GetClient(helpers.DecodeUUID(short_code))
 	}
 	data := vault.ReadStash(client)
 	var d_err error
@@ -70,7 +70,7 @@ func (c *Pop) Run(args []string) int {
 func pop_flags() (fs *flag.FlagSet) {
 	fs = helpers.Flags("pop")
 	fs.StringVar(&token, "token", "", "Specify token")
-	fs.StringVar(&hash_token, "hash-token", "", "Specify a hashed token")
+	fs.StringVar(&short_code, "short-code", "", "Specify a short code")
 	fs.StringVar(&dest_file, "output", "", "Write to file, instead of stdout")
 	return
 }
