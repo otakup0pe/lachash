@@ -6,6 +6,12 @@ This tool provides a means of securely exchanging arbitrary data with others via
 
 The mechanics are fairly simple. When writing the data to Vault a context-specific token is created. This is used to store the data in a cubbyhole, and subsequently retrieve the data. The receiving party doesn't actually even need a Vault account as the provided token is the accesor.
 
+# Install
+
+You can download premade binaries on the [releases](https://github.com/otakup0pe/lachash/releases/latest) page. These zip files contain the precompiled Go binary.
+
+If you wish to compile it yourself, there is a [Makefile](https://github.com/otakup0pe/lachash/blob/master/Makefile) which can be invoked with no target to run tests and build the various binaries.
+
 # Commands
 
 ## `stash`

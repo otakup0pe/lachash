@@ -5,7 +5,6 @@ import (
 	"os"
 	"io/ioutil"
 	"strings"
-	"strconv"
 	"github.com/hashicorp/vault/api"
 	"github.com/otakup0pe/lachash/helpers"
 )
@@ -43,7 +42,7 @@ func GetStashToken(client *api.Client, ttl int, uses int, policy string,) string
 		use_default = true
 	}
 	tcr := &api.TokenCreateRequest{
-		TTL: strconv.Itoa(ttl),
+		TTL: fmt.Sprintf("%ds", ttl),
 		Policies: policies,
 		DisplayName: fmt.Sprintf("lachash"),
 		NoDefaultPolicy: use_default,
