@@ -53,8 +53,19 @@ func (c *Stash) Run(args []string) int {
 	} else {
 		helpers.Problems("Nothing to stash")
 	}
-	
-	var encoded = base64.StdEncoding.EncodeToString(junk)
+	// I think the actual limit is 500k?
+	var processed []byte
+	if len(junk) < 300000 {
+		processed = junk
+	} else {
+		var compressed = helpers.Compress(junk)
+	}
+	encoded = base64.StdEncoding.EncodeToString(processed)
+	var data = make(map[string]interface{})
+	data["data"] = encoded
+	if len(junk) != len(processed) {
+		data["compressed"] = "true"
+	}
 	client := vault.GetClient(vault.GetToken())
 	stash_token := vault.GetStashToken(client, ttl, uses, policy)
 	client.SetToken(stash_token)

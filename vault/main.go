@@ -55,7 +55,7 @@ func GetStashToken(client *api.Client, ttl int, uses int, policy string,) string
 	return token_secret.Auth.ClientToken
 }
 
-func ReadStash(client *api.Client) (data string) {
+func ReadStash(client *api.Client) (data map[string]interface {}) {
 	stash_secret, err := client.Logical().Read(helpers.StashPath())
 	if err != nil {
 		helpers.Problems(err.Error())
@@ -63,16 +63,15 @@ func ReadStash(client *api.Client) (data string) {
 	if stash_secret == nil {
 		helpers.Problems("Nothing found!")
 	}
-	if deets, err := stash_secret.Data["data"]; err {
-		data = fmt.Sprintf("%v", deets)
+	data, err = stash_secret.Data["data"]
+	if err != nil {
+		helpers.Problems(err.Error())
 	}
 	return
 }
 
-func WriteStash(junk string, client *api.Client) {
-	var data = make(map[string]interface{})
-	data["data"] = junk
-	_, err := client.Logical().Write(helpers.StashPath(), data)
+func WriteStash(junk map[string]interface {}, client *api.Client) {
+	_, err := client.Logical().Write(helpers.StashPath(), junk)
 	if err != nil {
 		helpers.Problems(err.Error())
 	}

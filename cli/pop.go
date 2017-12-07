@@ -58,11 +58,17 @@ func (c *Pop) Run(args []string) int {
 	junk, d_err = base64.StdEncoding.DecodeString(data)
 	if d_err != nil {
 		helpers.Problems(d_err.Error())
+	}	
+	var processed []byte
+	if data["compressed"] && data["compressed"] == "true" {
+		processed = helpers.Uncompress(data["data"])
+	} else {
+		processed = junk
 	}
 	if dest_file != "" {
-		ioutil.WriteFile(dest_file, junk, 0640)
+		ioutil.WriteFile(dest_file, processed, 0640)
 	} else {
-		helpers.Output(fmt.Sprintf("%s", junk))
+		helpers.Output(fmt.Sprintf("%s", processed))
 	}
 	return 0
 }

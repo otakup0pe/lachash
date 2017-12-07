@@ -1,9 +1,11 @@
 package helpers
 import (
 	"os"
+	"bytes"
 	"fmt"
 	"github.com/google/uuid"
 	"encoding/base64"
+	"archive/zip"	
 	"flag"
 	cli_mod "github.com/mitchellh/cli"	
 )
@@ -58,6 +60,24 @@ func Flags(command string) (f *flag.FlagSet) {
 	f.BoolVar(&verbose, "verbose", false, "For some detailed debugging information")
 	f.StringVar(&stash_path, "path", "cubbyhole/lachash", "Specify a Vault path to use")
 	return
+}
+
+func Compress(junk []byte) *bytes.Buffer {
+	buf := new(bytes.Buffer)
+	zipfile := zip.NewWriter(buf)
+	handle, err := zipfile.Create("file.dat")
+	if err != nil {
+		Problems(err.Error())
+	}
+	_, err = handle.Write(junk)
+	if err != nil {
+		Problems(err.Error())
+	}
+	err = zipfile.Close()
+	if err != nil {
+		Problems(err.Error())
+	}
+	return buf
 }
 
 func Init() {
